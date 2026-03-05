@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GROUPIE - 智慧分組媒合系統</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+  
+  <style>
+    :root {
+      /* 🚀 統一使用推薦分數的藍色系 */
+      --primary-blue: #0d6efd;
+      --primary-gradient: linear-gradient(135deg, #0d6efd 0%, #0043a8 100%);
+    }
+
+    body {
+      background-color: #f4f7f6;
+      font-family: 'Segoe UI', 'Microsoft JhengHei', sans-serif;
+    }
+
+    .hero-section {
+      background: var(--primary-gradient);
+      padding: 60px 0 100px 0;
+      color: white;
+      border-radius: 0 0 50px 50px;
+    }
+
+    /* 🚀 核心：四個按鈕採用完全相同的卡片形狀與特效 */
+    .menu-card {
+      border: none;
+      border-radius: 24px;
+      background: white;
+      transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+      height: 100%;
+      cursor: pointer;
+      text-decoration: none !important;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 30px 20px;
+    }
+
+    .menu-card:hover {
+      transform: translateY(-10px);
+      box-shadow: 0 15px 30px rgba(13, 110, 253, 0.15);
+      background: #f8fbff;
+    }
+
+    .icon-box {
+      font-size: 3rem;
+      margin-bottom: 15px;
+      transition: transform 0.3s ease;
+    }
+
+    .menu-card:hover .icon-box {
+      transform: scale(1.1);
+    }
+
+    .card-title {
+      color: #212529;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    /* 🚀 統一按鈕色系 */
+    .btn-action-unified {
+      background: var(--primary-gradient);
+      color: white;
+      border: none;
+      border-radius: 50px;
+      padding: 8px 25px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      box-shadow: 0 4px 10px rgba(13, 110, 253, 0.2);
+    }
+
+    .stat-label {
+      font-size: 0.85rem;
+      color: #6c757d;
+      margin-bottom: 15px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div id="navbar-container"></div>
+
+  <header class="hero-section text-center">
+    <div class="container">
+      <h1 class="display-5 fw-bold mb-2">找到最適合你的夥伴</h1>
+      <p class="lead opacity-75">智慧媒合系統協助您快速組隊，開啟完美的專案協作</p>
+    </div>
+  </header>
+
+  <div class="container" style="position: relative; z-index: 10; margin-top: -50px;">
+    
+    <div class="row g-4">
+      
+      <div class="col-md-3">
+        <a href="my_team.html" class="card menu-card">
+          <div class="icon-box">🤝</div>
+          <h5 class="card-title">我的組隊</h5>
+          <p class="stat-label">查看目前的隊伍與進度</p>
+          <div class="btn btn-action-unified">進入查看</div>
+        </a>
+      </div>
+
+      <div class="col-md-3">
+        <a href="join_team.html" class="card menu-card">
+          <div class="icon-box">🔎</div>
+          <h5 class="card-title">加入組隊</h5>
+          <p class="stat-label">尋找正在招募中的隊伍</p>
+          <div class="btn btn-action-unified">立即搜尋</div>
+        </a>
+      </div>
+
+      <div class="col-md-3">
+        <a href="create_team.html" class="card menu-card">
+          <div class="icon-box">✨</div>
+          <h5 class="card-title">發起組隊</h5>
+          <p class="stat-label">建立新計畫並徵求組員</p>
+          <div class="btn btn-action-unified">快速建立</div>
+        </a>
+      </div>
+
+      <div class="col-md-3">
+        <a href="application.html" class="card menu-card">
+          <div class="icon-box">📩</div>
+          <h5 class="card-title">申請管理</h5>
+          <p class="stat-label">審核入隊申請與回覆</p>
+          <div class="btn btn-action-unified">管理中心</div>
+        </a>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    fetch('navbar.html')
+      .then(res => res.text())
+      .then(html => document.getElementById('navbar-container').innerHTML = html);
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

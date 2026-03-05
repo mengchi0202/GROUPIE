@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>註冊 Step 2 - GROUPIE</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+  <style>
+    :root {
+      --primary-blue: #0d6efd;
+      --primary-gradient: linear-gradient(135deg, #0d6efd 0%, #0043a8 100%);
+      --bg-light-blue: #f0f7ff;
+    }
+
+    body { 
+      background-color: var(--bg-light-blue); 
+      font-family: 'Segoe UI', 'Microsoft JhengHei', sans-serif; 
+      min-height: 100vh;
+    }
+
+    /* 頂部藍色區塊 */
+    .header-section {
+      background: var(--primary-gradient);
+      padding: 60px 0 80px 0;
+      color: white;
+      border-radius: 0 0 30px 30px;
+      text-align: center;
+    }
+
+    /* 容器向上偏移 */
+    .form-container {
+      margin-top: -50px;
+      z-index: 10;
+      position: relative;
+      max-width: 600px;
+    }
+
+    .custom-card {
+      border: none;
+      border-radius: 20px;
+      background: #ffffff;
+      box-shadow: 0 10px 30px rgba(13, 110, 253, 0.08);
+      padding: 40px;
+    }
+
+    .form-label { font-weight: 600; color: #475569; margin-bottom: 8px; }
+    
+    .form-control { 
+      border: 1px solid #e2e8f0; 
+      border-radius: 12px; 
+      padding: 12px 15px;
+    }
+
+    .skill-group {
+      background: #f8fafc;
+      padding: 20px;
+      border-radius: 15px;
+      border: 1px solid #edf2f7;
+    }
+
+    .btn-submit {
+      background: var(--primary-gradient);
+      border: none;
+      border-radius: 12px;
+      padding: 14px;
+      font-weight: 700;
+      color: white;
+      width: 100%;
+      margin-top: 20px;
+    }
+
+    .step-indicator {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--primary-blue);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 10px;
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <div id="navbar-container"></div>
+
+  <div class="header-section">
+    <div class="container">
+      <h2 class="fw-bold">完成您的個人檔案</h2>
+      <p class="opacity-75">讓未來的隊友更了解您的專長</p>
+    </div>
+  </div>
+
+  <div class="container form-container mb-5">
+    <div class="custom-card">
+      <span class="step-indicator text-center">Step 2</span>
+      <h3 class="fw-bold mb-4 text-center">個人資料設定</h3>
+
+      <form id="registerStep2">
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label for="name" class="form-label">姓名</label>
+            <input type="text" class="form-control" id="name" placeholder="王小明" required>
+          </div>
+          <div class="col-md-6">
+            <label for="dept" class="form-label">系級</label>
+            <input type="text" class="form-control" id="dept" placeholder="資管系三年級" required>
+          </div>
+
+          <div class="col-12 mt-4">
+            <label class="form-label">💡 我的專長（可複選）</label>
+            <div class="skill-group">
+              <div class="row">
+                <div class="col-6 mb-2">
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="skill1" value="簡報">
+                    <label class="form-check-label" for="skill1">簡報製作</label>
+                  </div>
+                </div>
+                <div class="col-6 mb-2">
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="skill2" value="領導">
+                    <label class="form-check-label" for="skill2">團隊領導</label>
+                  </div>
+                </div>
+                <div class="col-6 mb-2">
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="skill3" value="資料分析">
+                    <label class="form-check-label" for="skill3">資料分析</label>
+                  </div>
+                </div>
+                <div class="col-6 mb-2">
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="skill4" value="程式設計">
+                    <label class="form-check-label" for="skill4">程式設計</label>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-12 mt-4">
+            <label for="experience" class="form-label">個人經歷 / 簡介</label>
+            <textarea class="form-control" id="experience" rows="4" placeholder="請簡單介紹您的專題經驗或工作心得..." required></textarea>
+          </div>
+
+          <div class="col-12">
+            <button type="submit" class="btn btn-submit">完成註冊，開始組隊！</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    // 1. 載入導覽列
+    fetch('navbar_register.html')
+      .then(res => res.text())
+      .then(html => document.getElementById('navbar-container').innerHTML = html);
+
+    // 2. 儲存資料邏輯
+    document.getElementById('registerStep2').addEventListener('submit', async function(e) {
+      e.preventDefault();
+  
+      const studentid = localStorage.getItem('studentid');
+      if (!studentid) {
+        alert("⚠️ 請先完成 Step 1 註冊");
+        location.href = 'register_step1.html';
+        return;
+      }
+  
+      const name = document.getElementById('name').value;
+      const department = document.getElementById('dept').value;
+      const experience = document.getElementById('experience').value;
+      const skills = Array.from(document.querySelectorAll('input[type="checkbox"]:checked')).map(cb => cb.value);
+  
+      try {
+        const response = await fetch('http://localhost:3000/api/auth/register/profile', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            studentid,
+            name,
+            department,
+            skills,
+            experience
+          })
+        });
+  
+        const result = await response.json();
+  
+        if (!response.ok) {
+          alert("❌ 儲存失敗：" + result.message);
+          return;
+        }
+  
+        // ✅ 這裡會跳出 127.0.0.1:5500 顯示
+        alert("🎉 註冊完成，歡迎使用 GROUPIE！");
+        
+        localStorage.setItem('studentid', studentid);
+        location.href = 'home.html';
+  
+      } catch (error) {
+        console.error("❌ 錯誤:", error);
+        alert("⚠️ 連線錯誤，請確認後端伺服器已啟動");
+      }
+    });
+  </script>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

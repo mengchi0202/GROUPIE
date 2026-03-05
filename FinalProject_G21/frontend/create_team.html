@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>建立新組隊 - GROUPIE</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+  <style>
+    :root {
+      --primary-blue: #0d6efd;
+      --primary-gradient: linear-gradient(135deg, #0d6efd 0%, #0043a8 100%);
+      --bg-light-blue: #f0f7ff;
+    }
+
+    body { 
+      background-color: var(--bg-light-blue); 
+      font-family: 'Segoe UI', 'Microsoft JhengHei', sans-serif; 
+      min-height: 100vh;
+    }
+
+    .header-section {
+      background: var(--primary-gradient);
+      padding: 40px 0 60px 0;
+      color: white;
+      border-radius: 0 0 30px 30px;
+    }
+
+    .back-link { color: rgba(255,255,255,0.8); transition: 0.2s; }
+    .back-link:hover { color: white; }
+
+    .form-container {
+      margin-top: -30px;
+      z-index: 10;
+      position: relative;
+      max-width: 700px;
+    }
+
+    .custom-card {
+      border: none;
+      border-radius: 20px;
+      background: #ffffff;
+      box-shadow: 0 10px 30px rgba(13, 110, 253, 0.08);
+      padding: 40px;
+    }
+
+    .form-label { font-weight: 600; color: #475569; margin-bottom: 8px; }
+    .form-control { border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px; }
+
+    .btn-group .btn-outline-dark { border-color: #e2e8f0; color: #64748b; padding: 10px 20px; font-weight: 600; }
+    .btn-check:checked + .btn-outline-dark { background-color: var(--primary-blue); border-color: var(--primary-blue); color: white; }
+
+    .btn-submit {
+      background: var(--primary-gradient);
+      border: none;
+      border-radius: 12px;
+      padding: 12px 30px;
+      font-weight: 700;
+      color: white;
+      width: 100%;
+      margin-top: 20px;
+    }
+
+    .section-divider { height: 1px; background-color: #f1f5f9; margin: 25px 0; }
+  </style>
+</head>
+<body>
+  <div id="navbar-placeholder"></div>
+
+  <div class="header-section text-center">
+    <div class="container">
+      <div class="d-flex justify-content-start">
+        <button class="btn btn-link back-link text-decoration-none p-0 mb-3" onclick="history.back()">&larr; 返回</button>
+      </div>
+      <h2 class="fw-bold">建立新組隊</h2>
+      <p class="opacity-75">設定課程資訊與篩選權重，系統將為您推薦最佳夥伴</p>
+    </div>
+  </div>
+
+  <div class="container form-container mb-5">
+    <form id="createTeamForm" class="custom-card">
+      <div class="row g-4">
+        <div class="col-md-8">
+          <label for="courseName" class="form-label">課程名稱</label>
+          <input type="text" id="courseName" class="form-control" placeholder="例如：程式設計" required>
+        </div>
+
+        <div class="col-md-4">
+          <label for="memberCount" class="form-label">預期組員人數</label>
+          <input type="number" id="memberCount" class="form-control" placeholder="人數" required>
+        </div>
+
+        <div class="section-divider"></div>
+
+        <div class="col-12">
+          <label class="form-label d-block">⏳ 可行時間權重</label>
+          <div class="btn-group w-100" role="group">
+            <input type="radio" class="btn-check" name="timeWeight" value="1" id="time1" required><label class="btn btn-outline-dark" for="time1">1</label>
+            <input type="radio" class="btn-check" name="timeWeight" value="2" id="time2"><label class="btn btn-outline-dark" for="time2">2</label>
+            <input type="radio" class="btn-check" name="timeWeight" value="3" id="time3"><label class="btn btn-outline-dark" for="time3">3</label>
+            <input type="radio" class="btn-check" name="timeWeight" value="4" id="time4"><label class="btn btn-outline-dark" for="time4">4</label>
+            <input type="radio" class="btn-check" name="timeWeight" value="5" id="time5"><label class="btn btn-outline-dark" for="time5">5</label>
+          </div>
+        </div>
+
+        <div class="col-12 mt-4">
+          <label class="form-label d-block">⭐ 評價權重</label>
+          <div class="btn-group w-100" role="group">
+            <input type="radio" class="btn-check" name="ratingWeight" value="1" id="rate1" required><label class="btn btn-outline-dark" for="rate1">1</label>
+            <input type="radio" class="btn-check" name="ratingWeight" value="2" id="rate2"><label class="btn btn-outline-dark" for="rate2">2</label>
+            <input type="radio" class="btn-check" name="ratingWeight" value="3" id="rate3"><label class="btn btn-outline-dark" for="rate3">3</label>
+            <input type="radio" class="btn-check" name="ratingWeight" value="4" id="rate4"><label class="btn btn-outline-dark" for="rate4">4</label>
+            <input type="radio" class="btn-check" name="ratingWeight" value="5" id="rate5"><label class="btn btn-outline-dark" for="rate5">5</label>
+          </div>
+        </div>
+
+        <div class="col-12 mt-4">
+          <label class="form-label">其他補充說明</label>
+          <textarea id="otherInfo" class="form-control" rows="3" placeholder="例如：希望找會寫 Python 的同學..."></textarea>
+        </div>
+
+        <div class="col-12">
+          <button type="submit" class="btn btn-submit">確認建立並尋找隊友</button>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <script>
+    // 1. 載入導覽列
+    fetch('navbar.html').then(res => res.text()).then(html => {
+      document.getElementById('navbar-placeholder').innerHTML = html;
+    });
+  
+    const studentid = localStorage.getItem('studentid');
+    if (!studentid) {
+      alert("請先登入");
+      location.href = "login.html";
+    }
+  
+    // 2. 自動載入個人權重設定
+    window.addEventListener("DOMContentLoaded", async () => {
+      try {
+        const res = await fetch(`http://localhost:3000/api/auth/profile/${studentid}`);
+        const data = await res.json();
+        if (res.ok) {
+          const wTime = data.Weight_Availability || 1;
+          const wRate = data.Weight_Rating || 1;
+          const timeRadio = document.getElementById(`time${Math.round(wTime)}`);
+          const rateRadio = document.getElementById(`rate${Math.round(wRate)}`);
+          if (timeRadio) timeRadio.checked = true;
+          if (rateRadio) rateRadio.checked = true;
+        }
+      } catch (err) { console.error("⚠️ 無法載入個人權重", err); }
+    });
+  
+    // 3. 建立隊伍
+    document.getElementById("createTeamForm").addEventListener("submit", async function(e) {
+      e.preventDefault();
+  
+      const course = document.getElementById("courseName").value.trim();
+      const teamSize = parseInt(document.getElementById("memberCount").value);
+      const weight_availability = document.querySelector('input[name="timeWeight"]:checked')?.value;
+      const weight_rating = document.querySelector('input[name="ratingWeight"]:checked')?.value;
+
+      try {
+        const res = await fetch("http://localhost:3000/api/teams", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            teamName: course,
+            teamSize,
+            creator_studentid: studentid,
+            weight_availability,
+            weight_rating
+          })
+        });
+
+        // ... 之前的 fetch 內容 ...
+
+        if (res.ok) {
+            // 1. 取得後端回傳的資料（包含 teamId）
+            const result = await res.json(); 
+            const newTeamId = result.teamId; 
+
+            // 2. 顯示你要求的原生對話框 (會顯示 127.0.0.1:5500 顯示)
+            alert("✅ 隊伍建立成功！");
+            
+            // 3. 跳轉到推薦頁面，並帶著 teamId 參數
+            // 請確認你的檔案名稱是 member_recommendation.html 還是 member-recommendations.html
+            window.location.href = `member_recommendation.html?teamId=${newTeamId}`;
+        }
+
+        else {
+          const result = await res.json();
+          alert("❌ 建立失敗：" + result.message);
+        }
+      } catch (err) {
+        console.error(err);
+        alert("⚠️ 建立過程發生錯誤，請稍後再試");
+      }
+    }); // 補上遺漏的大括號
+  </script>
+  
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

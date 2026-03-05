@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>組隊詳情 - GROUPIE</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="css/styles.css" />
+  <style>
+    :root {
+      --primary-blue: #0d6efd;
+      --primary-gradient: linear-gradient(135deg, #0d6efd 0%, #0043a8 100%);
+    }
+
+    body { background-color: #f8fafc; font-family: 'Segoe UI', 'Microsoft JhengHei', sans-serif; }
+
+    /* 頂部 Header 區塊 */
+    .detail-header {
+      background: var(--primary-gradient);
+      padding: 40px 0 80px 0;
+      color: white;
+      border-radius: 0 0 40px 40px;
+      margin-bottom: -40px;
+    }
+
+    .back-link { color: rgba(255,255,255,0.8); transition: 0.2s; }
+    .back-link:hover { color: white; }
+
+    /* 隊伍基本資訊卡片 */
+    .info-card {
+      border: none;
+      border-radius: 20px;
+      background: white;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+      padding: 25px;
+    }
+
+    /* 組員小卡片 */
+    .member-card {
+      border: none;
+      border-radius: 16px;
+      background: white;
+      transition: transform 0.3s ease;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+      height: 100%;
+    }
+    .member-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.06);
+    }
+
+    .rating-badge {
+      background-color: #fff9db;
+      color: #f08c00;
+      font-weight: 700;
+      padding: 5px 12px;
+      border-radius: 50px;
+      font-size: 0.85rem;
+    }
+
+    .section-title {
+      font-weight: 800;
+      color: #1e293b;
+      margin-bottom: 20px;
+      padding-left: 10px;
+      border-left: 5px solid var(--primary-blue);
+    }
+
+    .info-label { color: #64748b; font-size: 0.9rem; margin-bottom: 2px; }
+    .info-value { color: #1e293b; font-weight: 600; }
+  </style>
+</head>
+<body>
+  <div id="navbar-placeholder"></div>
+
+  <div class="detail-header text-center">
+    <div class="container">
+      <div class="d-flex justify-content-start">
+        <button class="btn btn-link back-link text-decoration-none p-0 mb-3" onclick="history.back()">&larr; 返回列表</button>
+      </div>
+      <h2 class="fw-bold mb-0">組隊詳細資訊</h2>
+    </div>
+  </div>
+
+  <div class="container mb-5" style="position: relative; z-index: 10;">
+    <div id="teamInfo" class="row justify-content-center mb-5">
+      <div class="col-md-10">
+        <div class="info-card text-center">
+          <p class="text-muted">正在載入隊伍資訊...</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-10 mx-auto">
+      <h4 class="section-title">團隊成員</h4>
+      <div id="memberListGrid" class="row g-4">
+        </div>
+    </div>
+  </div>
+
+  <script>
+    // 載入導覽列
+    fetch('navbar.html').then(res => res.text()).then(html => {
+      document.getElementById('navbar-placeholder').innerHTML = html;
+    });
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const teamId = urlParams.get('teamId');
+
+    async function loadTeamDetails() {
+      if (!teamId) return;
+
+      try {
+        const res = await fetch(`http://localhost:3000/api/teams/${teamId}`);
+        const data = await res.json();
+
+        if (!res.ok) {
+          document.getElementById('teamInfo').innerHTML = `<div class="alert alert-danger">${data.message}</div>`;
+          return;
+        }
+
+        // 1. 渲染隊伍基本資訊
+        const teamName = data.course || data.Team_Name || '未命名課程';
+        const teamSize = data.team_size || data.Team_Size || 0;
+        const status = data.status || data.Status || 'ongoing';
+        const statusText = status === 'ongoing' ? '進行中' : '已完成';
+        const statusClass = status === 'ongoing' ? 'bg-primary' : 'bg-success';
+
+        document.getElementById('teamInfo').innerHTML = `
+          <div class="col-md-12">
+            <div class="info-card">
+              <div class="row align-items-center">
+                <div class="col-md-6 text-md-start">
+                  <span class="badge ${statusClass} mb-2">${statusText}</span>
+                  <h3 class="fw-bold text-dark mb-0">${teamName}</h3>
+                </div>
+                <div class="col-md-6 mt-3 mt-md-0">
+                  <div class="d-flex justify-content-md-end gap-4">
+                    <div class="text-center">
+                      <div class="info-label">人數上限</div>
+                      <div class="info-value h5 mb-0">${teamSize} 人</div>
+                    </div>
+                    <div class="text-center">
+                      <div class="info-label">目前成員</div>
+                      <div class="info-value h5 mb-0">${data.current_members.length} 人</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+
+        // 2. 渲染組員清單
+        const grid = document.getElementById('memberListGrid');
+        grid.innerHTML = '';
+
+        if (data.current_members.length === 0) {
+          grid.innerHTML = '<div class="col-12 text-center text-muted py-4">目前尚無組員資訊</div>';
+        } else {
+          data.current_members.forEach(member => {
+            const sName = member.name || member.Student_Name || '未知姓名';
+            const sDept = member.department || member.Student_Department || '系所未填';
+            const sSkills = member.specialty || member.Skills || '無';
+            const sExp = member.experience || member.Experience || '無';
+            const sRating = member.rating || member.Rating || 0;
+
+            const col = document.createElement('div');
+            col.className = 'col-md-6';
+            col.innerHTML = `
+              <div class="card member-card p-4">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                  <div>
+                    <h5 class="fw-bold mb-1">${sName}</h5>
+                    <span class="text-secondary small">${sDept}</span>
+                  </div>
+                  <div class="rating-badge">★ ${Number(sRating).toFixed(1)}</div>
+                </div>
+                <div class="mb-2">
+                  <div class="info-label small">💡 專長特色</div>
+                  <div class="text-dark small">${sSkills}</div>
+                </div>
+                <div>
+                  <div class="info-label small">📜 相關經歷</div>
+                  <div class="text-dark small">${sExp}</div>
+                </div>
+              </div>
+            `;
+            grid.appendChild(col);
+          });
+        }
+      } catch (err) {
+        console.error("載入失敗:", err);
+        alert("無法連線至伺服器，請檢查後端是否啟動");
+      }
+    }
+
+    loadTeamDetails();
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

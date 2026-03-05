@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>審核中 - GROUPIE</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+  <style>
+    :root {
+      --primary-blue: #0d6efd;
+      --primary-gradient: linear-gradient(135deg, #0d6efd 0%, #0043a8 100%);
+      --bg-light-blue: #f0f7ff;
+    }
+
+    body { 
+      background-color: var(--bg-light-blue); 
+      font-family: 'Segoe UI', 'Microsoft JhengHei', sans-serif; 
+      min-height: 100vh;
+    }
+
+    /* 頂部 Header */
+    .header-section {
+      background: var(--primary-gradient);
+      padding: 40px 0 60px 0;
+      color: white;
+      border-radius: 0 0 30px 30px;
+    }
+
+    .back-link { color: rgba(255,255,255,0.8); transition: 0.2s; }
+    .back-link:hover { color: white; }
+
+    /* 搜尋框優化 */
+    .search-container {
+      margin-top: -25px;
+      z-index: 10;
+      position: relative;
+    }
+    .custom-search {
+      border: none;
+      border-radius: 12px;
+      padding: 12px 20px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+
+    /* 審核卡片樣式 */
+    .review-card {
+      border: none;
+      border-radius: 16px;
+      background: #ffffff;
+      transition: all 0.3s ease;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+    }
+    .review-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 12px 25px rgba(13, 110, 253, 0.08);
+    }
+
+    .course-title {
+      color: #1e293b;
+      font-weight: 700;
+      font-size: 1.15rem;
+    }
+
+    .leader-info {
+      font-size: 0.9rem;
+      color: #64748b;
+    }
+
+    /* 狀態標籤 */
+    .badge-waiting {
+      background-color: #fffbeb;
+      color: #b45309;
+      border: 1px solid #fde68a;
+      font-weight: 600;
+      padding: 5px 12px;
+      border-radius: 50px;
+    }
+
+    /* 按鈕樣式 */
+    .btn-action {
+      border-radius: 10px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      padding: 8px 16px;
+    }
+  </style>
+</head>
+<body>
+  <div id="navbar-placeholder"></div>
+
+  <div class="header-section text-center">
+    <div class="container">
+      <div class="d-flex justify-content-start">
+        <a href="join_team.html" class="btn btn-link back-link text-decoration-none p-0 mb-3">&larr; 返回加入頁面</a>
+      </div>
+      <h2 class="fw-bold">確認審核申請</h2>
+      <p class="opacity-75">正在等待組長確認您的入隊請求</p>
+    </div>
+  </div>
+
+  <div class="container mb-5">
+    <div class="row justify-content-center search-container mb-4">
+      <div class="col-md-8">
+        <input id="searchInput" class="form-control custom-search" placeholder="🔍 輸入課程名稱搜尋審核中的申請...">
+      </div>
+    </div>
+
+    <div id="reviewList" class="row g-4">
+      </div>
+  </div>
+
+  <script>
+    let applications = [];
+
+    async function loadApplications() {
+      const studentid = localStorage.getItem('studentid');
+      if (!studentid) {
+        alert("請先登入");
+        location.href = 'index.html';
+        return;
+      }
+
+      try {
+        const res = await fetch(`http://localhost:3000/api/teams/user/${studentid}/applications/sent`);
+        if (!res.ok) throw new Error("無法取得申請資料");
+        
+        const data = await res.json();
+        
+        applications = data.map(app => ({
+          team_id: app.Team_ID || app.team_id,
+          course: app.Team_Name || app.course || "未命名課程",
+          leader_name: app.Creator_Name || app.leader_name || "組長",
+          status: app.Status || "pending"
+        }));
+
+        renderList();
+      } catch (err) {
+        console.error("❌ 載入失敗:", err);
+        document.getElementById("reviewList").innerHTML = `
+          <div class="col-12 text-center py-5">
+            <p class="text-danger">資料載入失敗，請確認後端伺服器已啟動</p>
+          </div>`;
+      }
+    }
+
+    function renderList(filter = "") {
+      const container = document.getElementById("reviewList");
+      container.innerHTML = "";
+
+      const filtered = applications.filter(app => app.course.toLowerCase().includes(filter.toLowerCase()));
+
+      if (filtered.length === 0) {
+        container.innerHTML = `
+          <div class="col-12 text-center py-5">
+            <p class="text-muted">目前沒有正在審核中的申請。</p>
+          </div>`;
+        return;
+      }
+
+      filtered.forEach(app => {
+        const col = document.createElement("div");
+        col.className = "col-md-6";
+        col.innerHTML = `
+          <div class="card review-card h-100">
+            <div class="card-body p-4">
+              <div class="d-flex justify-content-between align-items-start mb-3">
+                <h5 class="course-title mb-0">${app.course}</h5>
+                <span class="badge badge-waiting">等待審核</span>
+              </div>
+              
+              <p class="leader-info mb-4">
+                <i class="bi bi-person"></i> 組長：<strong>${app.leader_name}</strong>
+              </p>
+              
+              <div class="d-flex gap-2">
+                <button class="btn btn-outline-primary btn-action flex-fill" 
+                        onclick="location.href='team_details.html?teamId=${app.team_id}'">
+                  查看詳情
+                </button>
+                <button class="btn btn-light btn-action flex-fill text-secondary" 
+                        onclick="alert('聊天室功能開發中')">
+                  聯繫組長
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+        container.appendChild(col);
+      });
+    }
+
+    document.getElementById("searchInput").addEventListener("input", function () {
+      renderList(this.value.trim());
+    });
+
+    fetch('navbar.html').then(res => res.text()).then(html => {
+      document.getElementById('navbar-placeholder').innerHTML = html;
+    });
+
+    loadApplications();
+  </script>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

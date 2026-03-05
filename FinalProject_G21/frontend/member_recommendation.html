@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>組員推薦 - GROUPIE</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+  
+  <style>
+    :root {
+      --primary-gradient: linear-gradient(135deg, #0d6efd 0%, #0043a8 100%);
+    }
+
+    body {
+      background-color: #f8f9fa;
+    }
+
+    /* 卡片強化 */
+    .recommendation-card {
+      border: none;
+      border-radius: 16px;
+      overflow: hidden;
+      transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+      background: white;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+
+    .recommendation-card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 12px 24px rgba(0,0,0,0.12);
+    }
+
+    /* 得分圓圈 */
+    .score-badge {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      background: var(--primary-gradient);
+      color: white;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 10px rgba(13, 110, 253, 0.3);
+    }
+
+    .score-value {
+      font-size: 1.4rem;
+      font-weight: 800;
+      line-height: 1;
+    }
+
+    .score-label {
+      font-size: 0.6rem;
+      text-transform: uppercase;
+      opacity: 0.9;
+    }
+
+    /* 資訊欄位 */
+    .info-box {
+      background-color: #f1f4f9;
+      border-radius: 12px;
+      padding: 10px;
+    }
+
+    .info-item {
+      text-align: center;
+    }
+
+    .info-item .label {
+      font-size: 0.75rem;
+      color: #6c757d;
+      margin-bottom: 2px;
+    }
+
+    .info-item .value {
+      font-weight: 700;
+      color: #212529;
+    }
+
+    /* 按鈕樣式 */
+    .btn-invite {
+      border-radius: 50px;
+      font-weight: 600;
+      padding: 10px 20px;
+      transition: all 0.2s;
+    }
+
+    .btn-invited {
+      background-color: #198754 !important;
+      border-color: #198754 !important;
+      color: white !important;
+      transform: scale(1.02);
+    }
+
+    .dept-tag {
+      font-size: 0.75rem;
+      padding: 4px 12px;
+      border-radius: 50px;
+      background-color: #e7f1ff;
+      color: #0d6efd;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <div id="navbar-placeholder"></div>
+
+  <div class="container mt-5">
+    <div class="d-flex align-items-center justify-content-between mb-4">
+      <div class="d-flex align-items-center">
+        <button class="btn btn-outline-secondary btn-sm rounded-circle me-3" onclick="history.back()" style="width: 36px; height: 36px;">
+          &larr;
+        </button>
+        <div>
+          <h2 class="fw-bold mb-0 text-dark">組員推薦</h2>
+          <p class="mb-0 text-muted small">AI 根據您的權重設定與時間表算出的最佳匹配</p>
+        </div>
+      </div>
+    </div>
+
+    <div id="recommendList" class="row">
+      <div class="col-12 text-center py-5">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const teamId = urlParams.get("teamId");
+
+    if (!teamId) {
+      alert("未提供 teamId，無法載入推薦資料");
+      history.back();
+    }
+
+    async function loadRecommendations() {
+      try {
+        const res = await fetch(`http://localhost:3000/api/teams/recommend?TeamID=${teamId}`);
+        const data = await res.json();
+        renderRecommendations(data.recommended || []);
+      } catch (err) {
+        console.error("❌ 載入推薦失敗", err);
+        document.getElementById("recommendList").innerHTML = `
+          <div class="col-12 text-center">
+            <div class="alert alert-danger d-inline-block">伺服器連線失敗，請檢查後端服務。</div>
+          </div>`;
+      }
+    }
+
+    function renderRecommendations(users) {
+      const list = document.getElementById("recommendList");
+      list.innerHTML = "";
+
+      if (users.length === 0) {
+        list.innerHTML = `
+          <div class="col-12 text-center mt-5 py-5 border rounded-4 bg-white shadow-sm">
+            <h4 class="text-muted">🔍 目前沒有符合條件的人選</h4>
+            <p class="text-secondary">試著去個人頁面調整權重設定吧！</p>
+          </div>`;
+        return;
+      }
+
+      users.forEach(user => {
+        const cardCol = document.createElement("div");
+        cardCol.className = "col-md-6 col-lg-4 mb-4";
+        
+        const overlapCount = user.overlap_count || 0;
+        const matchingScore = user.matching_score ? parseFloat(user.matching_score).toFixed(1) : "0.0";
+        const rating = user.Rating ? parseFloat(user.Rating).toFixed(1) : "N/A";
+
+        cardCol.innerHTML = `
+          <div class="card recommendation-card h-100 p-3">
+            <div class="card-body d-flex flex-column p-0">
+              
+              <div class="d-flex align-items-center mb-4">
+                <div class="score-badge me-3">
+                  <span class="score-value">${matchingScore}</span>
+                  <span class="score-label">MATCH</span>
+                </div>
+                <div>
+                  <h5 class="fw-bold mb-1">${user.Student_Name}</h5>
+                  <div class="d-flex gap-2">
+                    <span class="dept-tag">${user.Student_Department || '資訊工程系'}</span>
+                    <span class="text-muted small">ID: ${user.Student_ID}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="info-box mb-4">
+                <div class="row g-0">
+                  <div class="col-6 info-item border-end">
+                    <div class="label">⭐ 歷史評分</div>
+                    <div class="value">${rating} / 5.0</div>
+                  </div>
+                  <div class="col-6 info-item">
+                    <div class="label">⏰ 共同時段</div>
+                    <div class="value text-primary">${overlapCount} hr</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="mt-auto">
+                <button id="invite-btn-${user.Student_ID}" 
+                        class="btn btn-primary w-100 btn-invite" 
+                        onclick="invite('${user.Student_ID}', ${teamId})">
+                  發送入隊邀請
+                </button>
+              </div>
+
+            </div>
+          </div>
+        `;
+        list.appendChild(cardCol);
+      });
+    }
+
+    async function invite(studentid, teamId) {
+      const btn = document.getElementById(`invite-btn-${studentid}`);
+      if (!confirm(`確定要邀請 ${studentid} 嗎？`)) return;
+
+      try {
+        const res = await fetch("http://localhost:3000/api/teams/invite", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ studentid, team_id: teamId })
+        });
+
+        if (res.ok) {
+          btn.disabled = true;
+          btn.classList.add("btn-invited");
+          btn.innerHTML = "<span>✅ 邀請已送出</span>";
+          btn.onclick = null;
+        } else {
+          const data = await res.json();
+          alert("❌ 邀請失敗：" + (data.message || "未知錯誤"));
+        }
+      } catch (err) {
+        alert("網路連線失敗");
+      }
+    }
+
+    // 載入導覽列並初始化
+    fetch("navbar.html")
+      .then(res => res.text())
+      .then(html => {
+        document.getElementById("navbar-placeholder").innerHTML = html;
+      });
+
+    window.onload = loadRecommendations;
+  </script>
+</body>
+</html>

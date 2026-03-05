@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>進行中組隊 - GROUPIE</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="css/styles.css">
+  <style>
+    :root {
+      --primary-blue: #0d6efd;
+      --primary-gradient: linear-gradient(135deg, #0d6efd 0%, #0043a8 100%);
+    }
+
+    body { background-color: #f8fafc; font-family: 'Segoe UI', 'Microsoft JhengHei', sans-serif; }
+
+    /* 頂部 Header */
+    .header-section {
+      background: var(--primary-gradient);
+      padding: 40px 0 60px 0;
+      color: white;
+      border-radius: 0 0 30px 30px;
+    }
+
+    .back-link { color: rgba(255,255,255,0.8); transition: 0.2s; }
+    .back-link:hover { color: white; }
+
+    /* 搜尋框 */
+    .search-container { margin-top: -25px; z-index: 10; position: relative; }
+    .custom-search {
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 12px 20px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+    }
+
+    /* 🚀 關鍵修改：無邊框極簡卡片 */
+    .team-card {
+      border: none;
+      border-radius: 16px;
+      background: #ffffff;
+      transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    }
+    
+    .team-card:hover {
+      transform: translateY(-8px) scale(1.02); /* 向上浮動並微縮放 */
+      box-shadow: 0 15px 30px rgba(0,0,0,0.08); /* 加深陰影 */
+    }
+
+    .card-title { color: #1e293b; font-size: 1.25rem; letter-spacing: -0.5px; }
+
+    /* 進度條 */
+    .progress { height: 8px; border-radius: 10px; background-color: #f1f5f9; }
+    
+    /* 按鈕 */
+    .btn-action { border-radius: 10px; font-weight: 600; font-size: 0.9rem; padding: 10px; }
+    .btn-details { background-color: #f1f5f9; color: #475569; border: none; }
+    .btn-details:hover { background-color: #e2e8f0; color: #1e293b; }
+
+  </style>
+</head>
+<body>
+  <div id="navbar-placeholder"></div>
+
+  <div class="header-section text-center">
+    <div class="container">
+      <div class="d-flex justify-content-start">
+        <button class="btn btn-link back-link text-decoration-none p-0 mb-3" onclick="history.back()">&larr; 返回</button>
+      </div>
+      <h2 class="fw-bold">進行中組隊</h2>
+      <p class="opacity-75">管理當前專案，查看成員與進度</p>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="row justify-content-center search-container mb-5">
+      <div class="col-md-7">
+        <input type="text" id="searchInput" class="form-control custom-search" placeholder="搜尋我的課程項目...">
+      </div>
+    </div>
+
+    <div id="teamList" class="row g-4">
+      </div>
+  </div>
+
+  <script>
+    const studentid = localStorage.getItem('studentid');
+    let allTeams = [];
+
+    async function loadTeams() {
+      try {
+        const res = await fetch(`http://localhost:3000/api/teams/ongoing/${studentid}`);
+        const data = await res.json();
+        allTeams = Array.isArray(data) ? data : [];
+        renderTeams(allTeams);
+      } catch (err) {
+        console.error("載入失敗", err);
+        renderTeams([]);
+      }
+    }
+
+    function renderTeams(teamsToRender) {
+      const teamListEl = document.getElementById('teamList');
+      teamListEl.innerHTML = '';
+
+      if (teamsToRender.length === 0) {
+        teamListEl.innerHTML = `<div class="col-12 text-center py-5 text-muted">目前暫無進行中的專案內容</div>`;
+        return;
+      }
+
+      teamsToRender.forEach(team => {
+        const tid = team.team_id || team.id;
+        const tcourse = team.course || "未命名課程";
+        const mCount = team.member_count || 0;
+        const tSize = team.team_size || 0;
+        const progressPercent = Math.min((mCount / tSize) * 100, 100);
+
+        const card = document.createElement('div');
+        card.className = 'col-md-6 col-lg-4';
+        card.innerHTML = `
+          <div class="card team-card h-100 p-2">
+            <div class="card-body d-flex flex-column">
+              <h5 class="card-title fw-bold mb-4">${tcourse}</h5>
+              
+              <div class="mb-4 mt-auto">
+                <div class="d-flex justify-content-between mb-2 small text-secondary">
+                  <span>團隊人數</span>
+                  <span class="fw-bold text-primary">${mCount} / ${tSize}</span>
+                </div>
+                <div class="progress">
+                  <div class="progress-bar" style="width: ${progressPercent}%; background: var(--primary-gradient);"></div>
+                </div>
+              </div>
+
+              <div class="row g-2">
+                <div class="col-6">
+                  <a href="team_details.html?teamId=${tid}" class="btn btn-details btn-action w-100">詳情</a>
+                </div>
+                <div class="col-6">
+                  <button class="btn btn-danger btn-action w-100" onclick="finishTeam(${tid}, '${tcourse}')">結束並評分</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+        teamListEl.appendChild(card);
+      });
+    }
+
+    document.getElementById('searchInput').addEventListener('input', function() {
+      const keyword = this.value.trim().toLowerCase();
+      renderTeams(allTeams.filter(t => (t.course || "").toLowerCase().includes(keyword)));
+    });
+
+    async function finishTeam(teamId, courseName) {
+      if (!confirm(`確定要結束「${courseName}」並進入組員評分階段嗎？`)) return;
+      try {
+        const res = await fetch(`http://localhost:3000/api/teams/finish/${teamId}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        if (res.ok) {
+          localStorage.setItem("evaluation_target", JSON.stringify({ teamId, course: courseName }));
+          location.href = "evaluation.html";
+        }
+      } catch (err) { console.error(err); }
+    }
+
+    fetch('navbar.html').then(res => res.text()).then(html => {
+      document.getElementById('navbar-placeholder').innerHTML = html;
+    });
+    loadTeams();
+  </script>
+</body>
+</html>

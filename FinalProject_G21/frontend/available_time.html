@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>可行時間設定 - GROUPIE</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+  <style>
+    :root {
+      --primary-blue: #0d6efd;
+      --primary-gradient: linear-gradient(135deg, #0d6efd 0%, #0043a8 100%);
+      --bg-light-blue: #f0f7ff;
+    }
+
+    body { 
+      background-color: var(--bg-light-blue); 
+      font-family: 'Segoe UI', 'Microsoft JhengHei', sans-serif; 
+      min-height: 100vh;
+    }
+
+    /* 頂部 Header */
+    .header-section {
+      background: var(--primary-gradient);
+      padding: 40px 0 60px 0;
+      color: white;
+      border-radius: 0 0 30px 30px;
+    }
+
+    .back-link { color: rgba(255,255,255,0.8); transition: 0.2s; }
+    .back-link:hover { color: white; }
+
+    /* 表格容器卡片 */
+    .table-container {
+      margin-top: -30px;
+      background: #ffffff;
+      border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(13, 110, 253, 0.08);
+      padding: 30px;
+      z-index: 10;
+      position: relative;
+    }
+
+    .time-table { 
+      width: 100%; 
+      border-collapse: separate; 
+      border-spacing: 0;
+      font-size: 0.9rem;
+    }
+
+    .time-table th {
+      background-color: #f8fafc;
+      color: #64748b;
+      font-weight: 700;
+      padding: 12px;
+      border-bottom: 2px solid #edf2f7;
+      text-align: center;
+    }
+
+    .time-table td { 
+      border-bottom: 1px solid #f1f5f9; 
+      text-align: center; 
+      padding: 8px; 
+      transition: 0.2s;
+    }
+
+    /* 當滑鼠滑過整列時的視覺效果 */
+    .time-table tr:hover td {
+      background-color: #f0f7ff;
+    }
+
+    /* 時間欄位 */
+    .time-label {
+      font-weight: 600;
+      color: #94a3b8;
+      background-color: #f8fafc;
+      width: 80px;
+    }
+
+    /* 美化 Checkbox */
+    .time-table input[type="checkbox"] {
+      width: 20px;
+      height: 20px;
+      cursor: pointer;
+      accent-color: var(--primary-blue);
+      border-radius: 4px;
+    }
+
+    /* 按鈕 */
+    .btn-save {
+      background: var(--primary-gradient);
+      border: none;
+      border-radius: 12px;
+      font-weight: 700;
+      padding: 15px;
+      transition: 0.3s;
+    }
+    .btn-save:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(13, 110, 253, 0.2);
+    }
+
+    .tip-text {
+      font-size: 0.85rem;
+      color: #64748b;
+    }
+  </style>
+</head>
+<body>
+  <div id="navbar-placeholder"></div>
+
+  <div class="header-section text-center">
+    <div class="container">
+      <div class="d-flex justify-content-start">
+        <button class="btn btn-link back-link text-decoration-none p-0 mb-3" onclick="history.back()">&larr; 返回上頁</button>
+      </div>
+      <h2 class="fw-bold">可行時間設定</h2>
+      <p class="opacity-75">勾選您每週可以參與小組討論的時段</p>
+    </div>
+  </div>
+
+  <div class="container mb-5">
+    <div class="table-container">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <span class="tip-text">💡 提示：請點擊方格以選擇您的空閒時段</span>
+        <span class="badge bg-light text-dark border">8:00 AM - 10:00 PM</span>
+      </div>
+
+      <form id="availabilityForm">
+        <div class="table-responsive">
+          <table class="time-table">
+            <thead>
+              <tr>
+                <th>時間</th>
+                <th>週一</th><th>週二</th><th>週三</th><th>週四</th><th>週五</th><th>週六</th><th>週日</th>
+              </tr>
+            </thead>
+            <tbody id="timeTableBody">
+              </tbody>
+          </table>
+        </div>
+        
+        <div class="mt-4">
+          <button type="submit" class="btn btn-primary btn-save w-100">確認並儲存時間表</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    window.addEventListener('DOMContentLoaded', async () => {
+      const studentid = localStorage.getItem('studentid');
+      const tableBody = document.getElementById('timeTableBody');
+
+      // 1. 載入導覽列
+      fetch('navbar.html').then(res => res.text()).then(html => {
+        document.getElementById('navbar-placeholder').innerHTML = html;
+      });
+
+      // 2. 動態生成時間表
+      if (tableBody) {
+        for (let hour = 8; hour <= 22; hour++) {
+          const row = document.createElement('tr');
+          const timeStr = `${String(hour).padStart(2, '0')}:00`;
+          let html = `<td class="time-label">${timeStr}</td>`;
+          for (let day = 1; day <= 7; day++) {
+            html += `<td><input type="checkbox" name="availability[${day}][${hour}]"></td>`;
+          }
+          row.innerHTML = html;
+          tableBody.appendChild(row);
+        }
+      }
+
+      // 3. 載入已儲存的資料
+      try {
+        const res = await fetch(`http://localhost:3000/api/auth/available-times/${studentid}`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data && Array.isArray(data.availability)) {
+            data.availability.forEach(slot => {
+              if (slot.time && typeof slot.time === 'string') {
+                const startHour = parseInt(slot.time.split(":")[0]);
+                const checkbox = document.querySelector(`input[name="availability[${slot.day}][${startHour}]"]`);
+                if (checkbox) checkbox.checked = true;
+              }
+            });
+          }
+        }
+      } catch (err) {
+        console.error("載入失敗:", err);
+      }
+    });
+
+    // 4. 提交表單
+    document.getElementById("availabilityForm").addEventListener("submit", async function(e) {
+      e.preventDefault();
+      const studentid = localStorage.getItem('studentid');
+      const checkboxes = document.querySelectorAll('input[type="checkbox"]:checked');
+      const selectedSlots = [];
+
+      checkboxes.forEach(cb => {
+        const match = cb.name.match(/availability\[(\d+)\]\[(\d+)\]/);
+        if (match) {
+          const [_, day, hour] = match;
+          selectedSlots.push({ 
+            day: parseInt(day), 
+            time: `${String(hour).padStart(2, '0')}:00` 
+          });
+        }
+      });
+
+      try {
+        const res = await fetch(`http://localhost:3000/api/auth/available-times`, {
+          method: "POST",
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ studentId: studentid, availableTimes: selectedSlots })
+        });
+
+        if (res.ok) {
+          alert("✅ 可行時間已更新！");
+          window.location.href = "profile.html";
+        } else {
+          alert("❌ 儲存失敗");
+        }
+      } catch (err) {
+        alert("連線失敗");
+      }
+    });
+  </script>
+</body>
+</html>

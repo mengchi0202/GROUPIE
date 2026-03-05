@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>組隊歷史紀錄 - GROUPIE</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+  <style>
+    :root {
+      --primary-blue: #0d6efd;
+      --primary-gradient: linear-gradient(135deg, #0d6efd 0%, #0043a8 100%);
+    }
+
+    body { background-color: #f8fafc; font-family: 'Segoe UI', 'Microsoft JhengHei', sans-serif; }
+
+    /* 頂部 Header */
+    .header-section {
+      background: var(--primary-gradient);
+      padding: 40px 0 60px 0;
+      color: white;
+      border-radius: 0 0 30px 30px;
+    }
+
+    .back-link { color: rgba(255,255,255,0.8); transition: 0.2s; }
+    .back-link:hover { color: white; }
+
+    /* 搜尋框 */
+    .search-container { margin-top: -25px; z-index: 10; position: relative; }
+    .custom-search {
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 12px 20px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+    }
+
+    /* 極簡歷史卡片 */
+    .history-card {
+      border: none;
+      border-radius: 16px;
+      background: #ffffff;
+      transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    }
+    
+    .history-card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 15px 30px rgba(0,0,0,0.08);
+    }
+
+    .card-title { color: #1e293b; font-size: 1.2rem; font-weight: 700; margin-bottom: 15px; }
+
+    /* 狀態與人數標籤 */
+    .stat-badge {
+      background-color: #f1f5f9;
+      color: #64748b;
+      font-size: 0.75rem;
+      padding: 4px 12px;
+      border-radius: 50px;
+      font-weight: 600;
+      display: inline-block;
+    }
+
+    .status-completed {
+      background-color: #ecfdf5;
+      color: #10b981;
+      font-size: 0.75rem;
+      padding: 4px 12px;
+      border-radius: 50px;
+      font-weight: 600;
+    }
+
+    /* 按鈕 */
+    .btn-action { 
+      border-radius: 10px; 
+      font-weight: 600; 
+      font-size: 0.85rem; 
+      padding: 8px; 
+      transition: 0.3s;
+      border-color: #e2e8f0;
+      color: #475569;
+    }
+    .btn-action:hover {
+      background-color: var(--primary-blue);
+      border-color: var(--primary-blue);
+      color: white;
+    }
+
+  </style>
+</head>
+<body>
+  <div id="navbar-placeholder"></div>
+
+  <div class="header-section text-center">
+    <div class="container">
+      <div class="d-flex justify-content-start">
+        <button class="btn btn-link back-link text-decoration-none p-0 mb-3" onclick="history.back()">&larr; 返回</button>
+      </div>
+      <h2 class="fw-bold">組隊歷史紀錄</h2>
+      <p class="opacity-75">回顧過往參與的專案與成員資訊</p>
+    </div>
+  </div>
+
+  <div class="container mb-5">
+    <div class="row justify-content-center search-container mb-5">
+      <div class="col-md-7">
+        <input id="searchInput" class="form-control custom-search" placeholder="🔍 搜尋過往課程項目...">
+      </div>
+    </div>
+
+    <div id="historyList" class="row g-4">
+      </div>
+  </div>
+
+  <script>
+    // 1. 載入導覽列
+    fetch('navbar.html').then(res => res.text()).then(html => {
+      document.getElementById('navbar-placeholder').innerHTML = html;
+    });
+
+    const studentid = localStorage.getItem('studentid');
+    if (!studentid) {
+      alert("請先登入");
+      location.href = 'index.html';
+    }
+
+    const historyListEl = document.getElementById("historyList");
+    let completedTeams = [];
+
+    // 2. 載入資料
+    async function loadCompletedTeams() {
+      try {
+        const res = await fetch(`http://localhost:3000/api/teams/my-teams/${studentid}/completed`);
+        if (!res.ok) throw new Error("API 響應錯誤");
+        
+        const data = await res.json();
+        
+        completedTeams = data.map(t => ({
+          team_id: t.team_id || t.Team_ID,
+          course: t.course || t.Team_Name,
+          team_size: t.team_size || t.Team_Size,
+          member_count: t.member_count !== undefined ? t.member_count : t.Member_Count
+        }));
+
+        renderTeams();
+      } catch (err) {
+        console.error("❌ 載入失敗", err);
+        historyListEl.innerHTML = `<div class="col-12 text-center py-5 text-danger">目前無法載入資料，請確認網路連線</div>`;
+      }
+    }
+
+    // 3. 渲染列表
+    function renderTeams(filterText = "") {
+      historyListEl.innerHTML = "";
+
+      const filtered = completedTeams.filter(team =>
+        team.course.toLowerCase().includes(filterText.toLowerCase())
+      );
+
+      if (filtered.length === 0) {
+        historyListEl.innerHTML = `
+          <div class="col-12 text-center py-5 text-muted">
+            <p>目前沒有相符的歷史紀錄。</p>
+          </div>`;
+        return;
+      }
+
+      filtered.forEach(team => {
+        const col = document.createElement('div');
+        col.className = 'col-md-6 col-lg-4';
+        col.innerHTML = `
+          <div class="card history-card h-100 p-2">
+            <div class="card-body d-flex flex-column">
+              <div class="d-flex justify-content-between align-items-start mb-2">
+                <span class="status-completed">✓ 已完成</span>
+              </div>
+              <h5 class="card-title">${team.course}</h5>
+              
+              <div class="mb-4">
+                <span class="stat-badge me-1">上限 ${team.team_size} 人</span>
+                <span class="stat-badge">實到 ${team.member_count} 人</span>
+              </div>
+
+              <div class="mt-auto">
+                <button class="btn btn-outline-secondary btn-action w-100" 
+                        onclick="location.href='team_details.html?teamId=${team.team_id}'">
+                  查看詳情
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+        historyListEl.appendChild(col);
+      });
+    }
+
+    // 4. 搜尋功能
+    document.getElementById('searchInput').addEventListener('input', function () {
+      renderTeams(this.value.trim());
+    });
+
+    loadCompletedTeams();
+  </script>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

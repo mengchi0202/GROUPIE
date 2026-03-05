@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>申請管理 - GROUPIE</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+  <style>
+    :root {
+      --primary-blue: #0d6efd;
+      --primary-gradient: linear-gradient(135deg, #0d6efd 0%, #0043a8 100%);
+      --bg-light-blue: #f0f7ff;
+    }
+
+    body { 
+      background-color: var(--bg-light-blue); 
+      font-family: 'Segoe UI', 'Microsoft JhengHei', sans-serif; 
+      min-height: 100vh;
+    }
+
+    /* 頂部 Header */
+    .header-section {
+      background: var(--primary-gradient);
+      padding: 40px 0 60px 0;
+      color: white;
+      border-radius: 0 0 30px 30px;
+    }
+
+    .back-link { color: rgba(255,255,255,0.8); transition: 0.2s; }
+    .back-link:hover { color: white; }
+
+    /* 功能入口卡片 */
+    .management-container {
+      margin-top: -30px;
+      z-index: 10;
+      position: relative;
+    }
+
+    .action-card {
+      border: none;
+      border-radius: 20px;
+      background: #ffffff;
+      transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+      box-shadow: 0 4px 15px rgba(13, 110, 253, 0.05);
+      overflow: hidden;
+      padding: 30px 20px;
+    }
+
+    .action-card:hover {
+      transform: translateY(-10px);
+      box-shadow: 0 15px 35px rgba(13, 110, 253, 0.12);
+    }
+
+    .icon-wrapper {
+      font-size: 2.5rem;
+      margin-bottom: 20px;
+      display: inline-block;
+    }
+
+    .card-title {
+      color: #1e293b;
+      font-weight: 700;
+      font-size: 1.25rem;
+      margin-bottom: 12px;
+    }
+
+    .card-text {
+      color: #64748b;
+      font-size: 0.9rem;
+      line-height: 1.6;
+      margin-bottom: 25px;
+      min-height: 45px;
+    }
+
+    /* 按鈕樣式 */
+    .btn-manage {
+      border-radius: 12px;
+      padding: 10px 20px;
+      font-weight: 600;
+      transition: 0.3s;
+      width: 100%;
+    }
+
+    .btn-blue { background: var(--primary-gradient); color: white; border: none; }
+    .btn-blue:hover { opacity: 0.9; color: white; transform: scale(1.02); }
+
+    .btn-outline { border: 2px solid #e2e8f0; color: #475569; background: transparent; }
+    .btn-outline:hover { border-color: var(--primary-blue); color: var(--primary-blue); }
+
+    .btn-success-soft { background-color: #ecfdf5; color: #10b981; border: none; }
+    .btn-success-soft:hover { background-color: #10b981; color: white; }
+
+  </style>
+</head>
+<body>
+  <div id="navbar-placeholder"></div>
+
+  <div class="header-section text-center">
+    <div class="container">
+      <div class="d-flex justify-content-start">
+        <button class="btn btn-link back-link text-decoration-none p-0 mb-3" onclick="window.location.href='home.html'">&larr; 返回首頁</button>
+      </div>
+      <h2 class="fw-bold">申請管理中心</h2>
+      <p class="opacity-75">追蹤您的申請進度與邀請狀態</p>
+    </div>
+  </div>
+
+  <div class="container management-container mb-5">
+    <div class="row g-4">
+      
+      <div class="col-md-4">
+        <div class="action-card text-center h-100">
+          <div class="icon-wrapper">🕒</div>
+          <h5 class="card-title">審核中</h5>
+          <p class="card-text">查看您已送出並等待組長回應的申請紀錄。</p>
+          <button class="btn btn-manage btn-outline" onclick="location.href='under_review.html'">進入查看</button>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="action-card text-center h-100">
+          <div class="icon-wrapper">📋</div>
+          <h5 class="card-title">待審核</h5>
+          <p class="card-text">身為組長，處理其他同學加入您隊伍的請求。</p>
+          <button class="btn btn-manage btn-blue" onclick="location.href='pending_review.html'">開始審核</button>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="action-card text-center h-100">
+          <div class="icon-wrapper">✉️</div>
+          <h5 class="card-title">收到的邀請</h5>
+          <p class="card-text">其他小組主動發給您的入隊邀請，請選擇接受或拒絕。</p>
+          <button class="btn btn-manage btn-success-soft" onclick="location.href='invited.html'">查看邀請</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    // 1. 身份檢查
+    const studentid = localStorage.getItem('studentid');
+    if (!studentid) {
+      alert("請先登入系統");
+      location.href = 'index.html';
+    }
+
+    // 2. 載入導覽列
+    fetch('navbar.html')
+      .then(res => res.text())
+      .then(html => {
+        document.getElementById('navbar-placeholder').innerHTML = html;
+      });
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

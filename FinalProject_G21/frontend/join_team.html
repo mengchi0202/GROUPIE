@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>加入組隊 - GROUPIE</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+  <style>
+    :root {
+      --primary-blue: #0d6efd;
+      --primary-gradient: linear-gradient(135deg, #0d6efd 0%, #0043a8 100%);
+    }
+
+    body { background-color: #f8fafc; font-family: 'Segoe UI', 'Microsoft JhengHei', sans-serif; }
+
+    /* 頂部 Header */
+    .header-section {
+      background: var(--primary-gradient);
+      padding: 40px 0 60px 0;
+      color: white;
+      border-radius: 0 0 30px 30px;
+    }
+
+    .back-link { color: rgba(255,255,255,0.8); transition: 0.2s; }
+    .back-link:hover { color: white; }
+
+    /* 搜尋框優化 */
+    .search-container { margin-top: -25px; z-index: 10; position: relative; }
+    .custom-search {
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 12px 20px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+    }
+
+    /* 極簡組隊卡片 */
+    .team-card {
+      border: none;
+      border-radius: 16px;
+      background: #ffffff;
+      transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    }
+    
+    .team-card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 15px 30px rgba(0,0,0,0.08);
+    }
+
+    .card-title { color: #1e293b; font-size: 1.25rem; font-weight: 700; }
+
+    /* 標籤樣式 */
+    .size-badge {
+      background-color: #f1f5f9;
+      color: #64748b;
+      font-size: 0.8rem;
+      padding: 4px 10px;
+      border-radius: 50px;
+      font-weight: 600;
+    }
+
+    /* 按鈕樣式 */
+    .btn-action { border-radius: 10px; font-weight: 600; font-size: 0.9rem; padding: 10px; transition: 0.3s; }
+    .btn-apply { background: var(--primary-gradient); border: none; color: white; }
+    .btn-apply:hover { transform: scale(1.02); box-shadow: 0 5px 15px rgba(13, 110, 253, 0.3); }
+    
+    .btn-applied { background-color: #e2e8f0; color: #94a3b8; border: none; cursor: default; }
+
+    .btn-details { background-color: #f8fafc; color: #64748b; border: 1px solid #e2e8f0; }
+    .btn-details:hover { background-color: #f1f5f9; color: #1e293b; }
+  </style>
+</head>
+<body>
+  <div id="navbar-placeholder"></div>
+
+  <div class="header-section text-center">
+    <div class="container">
+      <div class="d-flex justify-content-start">
+        <button class="btn btn-link back-link text-decoration-none p-0 mb-3" onclick="history.back()">&larr; 返回</button>
+      </div>
+      <h2 class="fw-bold">加入組隊</h2>
+      <p class="opacity-75">探索正在徵人的專案，尋找你的理想夥伴</p>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="row justify-content-center search-container mb-5">
+      <div class="col-md-7">
+        <input id="searchInput" class="form-control custom-search" placeholder="🔍 搜尋課程名稱或專案...">
+      </div>
+    </div>
+
+    <div id="teamsContainer" class="row g-4">
+      </div>
+  </div>
+
+  <script>
+    // 1. 載入導覽列
+    fetch('navbar.html').then(res => res.text()).then(html => {
+      document.getElementById('navbar-placeholder').innerHTML = html;
+    });
+
+    const studentid = localStorage.getItem('studentid');
+    if (!studentid) {
+      alert("請先登入");
+      location.href = 'index.html';
+    }
+
+    let teamsData = [];
+    let appliedTeamIds = [];
+
+    // 2. 載入已申請過的隊伍
+    async function loadAppliedTeams() {
+      try {
+        const res = await fetch(`http://localhost:3000/api/teams/user/${studentid}/invites`);
+        const data = await res.json();
+        appliedTeamIds = data.map(app => String(app.Team_ID));
+      } catch (err) {
+        console.error("無法讀取申請紀錄", err);
+      }
+    }
+
+    // 3. 渲染隊伍列表 (改為極簡卡片設計)
+    function renderTeams(teams) {
+      const container = document.getElementById('teamsContainer');
+      container.innerHTML = '';
+
+      if (teams.length === 0) {
+        container.innerHTML = `
+          <div class="col-12 text-center py-5 text-muted">
+            <p>目前沒有可加入的隊伍，或是請嘗試換個關鍵字搜尋。</p>
+          </div>`;
+        return;
+      }
+
+      teams.forEach(team => {
+        const isApplied = appliedTeamIds.includes(String(team.team_id));
+        const col = document.createElement('div');
+        col.className = 'col-md-6 col-lg-4';
+        col.innerHTML = `
+          <div class="card team-card h-100 p-2">
+            <div class="card-body d-flex flex-column">
+              <div class="d-flex justify-content-between align-items-start mb-3">
+                <h5 class="card-title mb-0">${team.course}</h5>
+                <span class="size-badge">👥 ${team.team_size} 人</span>
+              </div>
+              
+              
+              <div class="row g-2 mt-auto">
+                <div class="col-5">
+                  <a href="team_details.html?teamId=${team.team_id}" class="btn btn-details btn-action w-100">查看詳情</a>
+                </div>
+                <div class="col-7">
+                  <button class="btn btn-action w-100 ${isApplied ? 'btn-applied' : 'btn-apply'}" 
+                          onclick="applyToTeam(${team.team_id}, this)" 
+                          ${isApplied ? 'disabled' : ''}>
+                    ${isApplied ? '✓ 已申請審核中' : '立即申請加入'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+        container.appendChild(col);
+      });
+    }
+
+    // 4. 申請加入隊伍
+    async function applyToTeam(teamId, buttonEl) {
+      if (!confirm("確定要送出加入申請嗎？組長將會收到您的背景資訊。")) return;
+
+      buttonEl.disabled = true;
+      buttonEl.textContent = '處理中...';
+
+      try {
+        const res = await fetch(`http://localhost:3000/api/teams/${teamId}/apply`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ studentid: studentid })
+        });
+
+        const result = await res.json();
+        if (!res.ok) {
+          alert("❌ 申請失敗：" + (result.message || "發生錯誤"));
+          buttonEl.disabled = false;
+          buttonEl.textContent = '立即申請加入';
+          return;
+        }
+
+        alert("✅ 申請已送出！您可以至「審核中」查看進度。");
+        appliedTeamIds.push(String(teamId));
+        renderTeams(teamsData); 
+
+      } catch (err) {
+        console.error(err);
+        alert("網路連線錯誤");
+        buttonEl.disabled = false;
+        buttonEl.textContent = '立即申請加入';
+      }
+    }
+
+    // 5. 搜尋功能
+    document.getElementById('searchInput').addEventListener('input', function () {
+      const keyword = this.value.trim().toLowerCase();
+      const filtered = teamsData.filter(team => team.course.toLowerCase().includes(keyword));
+      renderTeams(filtered);
+    });
+
+    // 6. 初始化頁面
+    async function loadTeamsPage() {
+      try {
+        await loadAppliedTeams();
+        const res = await fetch(`http://localhost:3000/api/teams?studentid=${studentid}`);
+        const teams = await res.json();
+
+        teamsData = teams.map(team => ({
+          team_id: team.id || team.Team_ID,
+          course: team.course || team.Team_Name,
+          team_size: team.team_size || team.Team_Size,
+          status: team.status || team.Status
+        }));
+
+        renderTeams(teamsData);
+      } catch (err) {
+        console.error("❌ 載入失敗", err);
+        document.getElementById('teamsContainer').innerHTML = '<p class="text-danger text-center">後端連線中斷，請稍後再試</p>';
+      }
+    }
+
+    loadTeamsPage();
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

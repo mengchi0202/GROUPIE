@@ -1,0 +1,104 @@
+/* 通用設定 */
+body {
+  background-color: #f8f9fa;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  color: #212529;
+}
+
+/* 容器美化 */
+.container {
+  background-color: #ffffff;
+  padding: 40px;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  max-width: 960px;
+}
+
+/* 標題樣式 */
+h1, h2, h3, h4, h5 {
+  color: #343a40;
+  font-weight: bold;
+}
+
+/* 返回按鈕 */
+.btn-link {
+  color: #6c757d;
+}
+.btn-link:hover {
+  color: #343a40;
+  text-decoration: underline;
+}
+
+/* 卡片樣式 */
+.card {
+  border: none;
+  border-radius: 10px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+.card-body {
+  font-size: 1rem;
+}
+.card-body p {
+  margin-bottom: 0.5rem;
+}
+
+/* 表單輸入框 */
+.form-control {
+  border-radius: 5px;
+  background-color: #fff;
+  border: 1px solid #ced4da;
+  padding: 10px;
+}
+.form-control:focus {
+  border-color: #80bdff;
+  outline: 0;
+  box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
+}
+
+/* 表單按鈕 */
+.btn-primary,
+.btn-success,
+.btn-danger,
+.btn-secondary,
+.btn-outline-secondary,
+.btn-dark {
+  border-radius: 6px;
+  font-weight: 500;
+  padding: 8px 16px;
+}
+
+/* 表格樣式 */
+.table,
+.time-table {
+  border-collapse: collapse;
+  font-size: 0.9rem;
+  width: 100%;
+}
+.table th,
+.table td,
+.time-table th,
+.time-table td {
+  border: 1px solid #dee2e6;
+  text-align: center;
+  padding: 6px;
+}
+.table th,
+.time-table th {
+  background-color: #f1f3f5;
+}
+
+/* 導覽列樣式 */
+.navbar {
+  background-color: #343a40 !important;
+}
+.navbar .nav-link {
+  color: #f8f9fa !important;
+}
+.navbar .nav-link:hover {
+  color: #adb5bd !important;
+}
+
+/* 自定義按鈕間距 */
+.d-flex.gap-3 > .btn {
+  min-width: 120px;
+}

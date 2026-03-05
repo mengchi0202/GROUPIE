@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <title>聊天室（組長端）- GROUPIE</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+  <style>
+    .chat-box { height: 400px; overflow-y: auto; background-color: #f8f9fa; border: 1px solid #dee2e6; }
+    .message { margin-bottom: 15px; padding: 10px; border-radius: 10px; max-width: 80%; }
+    .message-mine { background-color: #007bff; color: white; align-self: flex-end; margin-left: auto; }
+    .message-other { background-color: #e9ecef; color: #212529; align-self: flex-start; }
+    .chat-container { display: flex; flex-direction: column; }
+  </style>
+</head>
+<body>
+  <div id="navbar-placeholder"></div>
+
+  <div class="container mt-4 mb-5">
+    <div class="card shadow-sm">
+      <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">💬 與 申請者 的對話</h5>
+        <button type="button" class="btn btn-sm btn-light" onclick="history.back()">返回管理</button>
+      </div>
+      
+      <div class="card-body">
+        <div id="chatBox" class="chat-box p-3 mb-3 rounded chat-container">
+          <div class="message message-other">
+            <strong>申請者：</strong> 請問這組還有缺人嗎？我擅長資料分析。
+          </div>
+          <div class="message message-mine">
+            <strong>你：</strong> 還有喔！請問你熟悉 Python 的哪種函式庫？
+          </div>
+          </div>
+
+        <form id="chatForm">
+          <div class="input-group">
+            <input type="text" id="messageInput" class="form-control" placeholder="輸入訊息..." required>
+            <button class="btn btn-primary" type="submit">送出</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // 1. 載入導覽列
+    fetch('navbar.html')
+      .then(res => res.text())
+      .then(html => document.getElementById('navbar-placeholder').innerHTML = html);
+
+    // 2. 身份與狀態檢查
+    const studentid = localStorage.getItem('studentid');
+    if (!studentid) {
+      alert("請先登入");
+      location.href = 'index.html';
+    }
+
+    // 3. 處理送出訊息邏輯
+    const chatForm = document.getElementById('chatForm');
+    const chatBox = document.getElementById('chatBox');
+    const messageInput = document.getElementById('messageInput');
+
+    chatForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+      const msgText = messageInput.value.trim();
+      
+      if (msgText) {
+        // 在畫面顯示新訊息
+        const msgDiv = document.createElement('div');
+        msgDiv.className = 'message message-mine';
+        msgDiv.innerHTML = `<strong>你：</strong> ${msgText}`;
+        chatBox.appendChild(msgDiv);
+        
+        // 捲動到底部
+        chatBox.scrollTop = chatBox.scrollHeight;
+        
+        // 清空輸入框
+        messageInput.value = '';
+
+        // 💡 實習面試加分點：此處未來可串接後端 API
+        // fetch('http://localhost:3000/api/teams/chat', { ... });
+      }
+    });
+  </script>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

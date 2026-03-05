@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>待審核 (收到的申請) - GROUPIE</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+  <style>
+    :root {
+      --primary-blue: #0d6efd;
+      --primary-gradient: linear-gradient(135deg, #0d6efd 0%, #0043a8 100%);
+      --bg-light-blue: #f0f7ff;
+    }
+
+    body { 
+      background-color: var(--bg-light-blue); 
+      font-family: 'Segoe UI', 'Microsoft JhengHei', sans-serif; 
+      min-height: 100vh;
+    }
+
+    /* 頂部 Header */
+    .header-section {
+      background: var(--primary-gradient);
+      padding: 40px 0 60px 0;
+      color: white;
+      border-radius: 0 0 30px 30px;
+    }
+
+    .back-link { color: rgba(255,255,255,0.8); transition: 0.2s; }
+    .back-link:hover { color: white; }
+
+    /* 搜尋框優化 */
+    .search-container {
+      margin-top: -25px;
+      z-index: 10;
+      position: relative;
+    }
+    .custom-search {
+      border: none;
+      border-radius: 12px;
+      padding: 12px 20px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+
+    /* 申請卡片樣式 */
+    .app-card {
+      border: none;
+      border-radius: 20px;
+      background: #ffffff;
+      transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+      box-shadow: 0 4px 15px rgba(13, 110, 253, 0.05);
+      padding: 25px;
+    }
+    .app-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 12px 25px rgba(13, 110, 253, 0.1);
+    }
+
+    .team-name {
+      color: var(--primary-blue);
+      font-weight: 700;
+      font-size: 1.2rem;
+      margin-bottom: 15px;
+    }
+
+    .applicant-info {
+      color: #475569;
+      font-size: 0.95rem;
+      margin-bottom: 8px;
+    }
+
+    /* 評分標籤 */
+    .rating-badge {
+      background-color: #fffbeb;
+      color: #b45309;
+      padding: 4px 12px;
+      border-radius: 50px;
+      font-weight: 600;
+      font-size: 0.85rem;
+    }
+
+    /* 按鈕樣式 */
+    .btn-action {
+      border-radius: 10px;
+      font-weight: 600;
+      padding: 8px 20px;
+      transition: 0.2s;
+    }
+    .btn-accept { background-color: #10b981; color: white; border: none; }
+    .btn-accept:hover { background-color: #059669; transform: scale(1.05); }
+    
+    .btn-reject { background-color: #fee2e2; color: #dc2626; border: none; }
+    .btn-reject:hover { background-color: #fca5a5; transform: scale(1.05); }
+
+    .status-text {
+      font-size: 1rem;
+      padding: 10px;
+      border-radius: 10px;
+      background: #f8fafc;
+    }
+  </style>
+</head>
+<body>
+  <div id="navbar-placeholder"></div>
+
+  <div class="header-section text-center">
+    <div class="container">
+      <div class="d-flex justify-content-start">
+        <button class="btn btn-link back-link text-decoration-none p-0 mb-3" onclick="history.back()">&larr; 返回管理中心</button>
+      </div>
+      <h2 class="fw-bold">待審核申請</h2>
+      <p class="opacity-75">身為組長，請在此決定是否讓新成員加入您的隊伍</p>
+    </div>
+  </div>
+
+  <div class="container mb-5">
+    <div class="row justify-content-center search-container mb-5">
+      <div class="col-md-8">
+        <input id="searchInput" class="form-control custom-search" placeholder="🔍 搜尋特定課程的申請...">
+      </div>
+    </div>
+
+    <div id="applicationList" class="row g-4">
+      </div>
+  </div>
+
+  <script>
+    let applications = [];
+  
+    // 1. 初始化頁面
+    window.addEventListener("DOMContentLoaded", async () => {
+      const studentid = localStorage.getItem('studentid');
+      if (!studentid) {
+        alert("請先登入");
+        location.href = 'index.html';
+        return;
+      }
+      loadApplications(studentid);
+    });
+
+    // 2. 載入向我申請的清單
+    async function loadApplications(studentid) {
+      try {
+        const res = await fetch(`http://localhost:3000/api/teams/user/${studentid}/applications/received`);
+        if (!res.ok) throw new Error("無法取得資料");
+        
+        applications = await res.json();
+        renderApplications();
+      } catch (err) {
+        console.error("❌ 載入失敗:", err);
+        document.getElementById("applicationList").innerHTML = `
+          <div class="col-12 text-center py-5">
+            <p class="text-danger">載入失敗，請確認伺服器已啟動。</p>
+          </div>`;
+      }
+    }
+
+    // 3. 渲染列表
+    function renderApplications(filter = "") {
+      const list = document.getElementById("applicationList");
+      list.innerHTML = "";
+
+      const filtered = applications.filter(app => 
+        (app.Team_Name || app.course || "").toLowerCase().includes(filter.toLowerCase())
+      );
+
+      if (filtered.length === 0) {
+        list.innerHTML = '<div class="col-12 text-center py-5 text-muted">目前沒有待處理的申請。</div>';
+        return;
+      }
+
+      filtered.forEach(app => {
+        const team_id = app.Team_ID || app.id;
+        const applicant_id = app.Student_ID || app.applicant_id;
+
+        const col = document.createElement("div");
+        col.className = "col-md-6";
+        col.innerHTML = `
+          <div class="card app-card h-100">
+            <div class="card-body d-flex flex-column">
+              <h5 class="team-name">${app.Team_Name || app.course}</h5>
+              
+              <div class="applicant-info">
+                <span class="text-secondary">申請人：</span> <strong>${app.Student_Name}</strong> 
+                <span class="text-muted ms-1">(${applicant_id})</span>
+              </div>
+              
+              <div class="mb-4">
+                <span class="text-secondary">平均評價：</span>
+                <span class="rating-badge">★ ${app.Rating || 0} / 5</span>
+              </div>
+
+              <div class="mt-auto pt-3 border-top d-flex justify-content-end gap-2" id="actions-${team_id}-${applicant_id}">
+                <button class="btn btn-action btn-reject" onclick="handleDecision(${team_id}, '${applicant_id}', false)">拒絕加入</button>
+                <button class="btn btn-action btn-accept" onclick="handleDecision(${team_id}, '${applicant_id}', true)">接受申請</button>
+              </div>
+              <div id="status-${team_id}-${applicant_id}" class="text-center mt-3 fw-bold text-secondary"></div>
+            </div>
+          </div>
+        `;
+        list.appendChild(col);
+      });
+    }
+  
+    // 4. 處理接受或拒絕
+    async function handleDecision(teamId, applicantId, isAccepted) {
+      const decision = isAccepted ? "accepted" : "rejected";
+      if (!confirm(`確定要${isAccepted ? '接受' : '拒絕'}此申請嗎？`)) return;
+
+      try {
+        const res = await fetch(`http://localhost:3000/api/teams/applications/decide`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            teamId: teamId,
+            applicant_id: applicantId,
+            decision: decision
+          })
+        });
+  
+        if (res.ok) {
+          alert(`已成功${isAccepted ? "接受" : "拒絕"}申請`);
+          document.getElementById(`actions-${teamId}-${applicantId}`).classList.add('d-none');
+          const statusEl = document.getElementById(`status-${teamId}-${applicantId}`);
+          statusEl.classList.add('status-text');
+          statusEl.innerHTML = isAccepted ? "✅ 已加入隊伍" : "❌ 已拒絕該申請";
+        } else {
+          const errData = await res.json();
+          alert("失敗：" + errData.message);
+        }
+      } catch (err) {
+        console.error("❌ 更新失敗", err);
+        alert("伺服器錯誤");
+      }
+    }
+  
+    document.getElementById("searchInput").addEventListener("input", function () {
+      renderApplications(this.value.trim());
+    });
+  
+    fetch('navbar.html').then(res => res.text()).then(html => {
+      document.getElementById('navbar-placeholder').innerHTML = html;
+    });
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
