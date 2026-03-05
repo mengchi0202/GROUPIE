@@ -1,9 +1,10 @@
 
 # 🎯 GROUPIE - 技術架構與資料庫設計說明
 
-GROUPIE 是一個模式分組媒合系統。本專案核心在於透過加權算法解決學生分組時的資訊不對稱問題。
+GROUPIE 是一個模式分組媒合系統。本專案核心在於透過加權算法解決學生分組時的資訊不對稱問題，幫助學生避開「雷組員」，尋找最契合的合作夥伴。
 
 ## 🏗️ 系統架構 (System Architecture)
+
 
 
 * **Frontend**: 原生 Web 技術 (HTML5/CSS3/JS ES6) 搭配 **Bootstrap 5**。
@@ -15,32 +16,30 @@ GROUPIE 是一個模式分組媒合系統。本專案核心在於透過加權算
 
 ## 📊 資料庫設計 (Database Design)
 
-資料庫設計遵循第三正規化 (3NF)，確保資料一致性並優化查詢效率。
 
-### 核心資料表 (ER-Relationship)
+本專案採用高度關聯的資料庫結構，確保資料完整性。
 
-1. **Users Table (使用者)**
-* `Student_ID` (PK): 學號，唯一識別。
-* `Password`: 經雜湊加密後的密碼串。
-* `Email`, `Name`, `Department`: 基本通訊與系級資訊。
-* `Weight_Availability`: 預設時間權重 (1-5)。
-* `Weight_Rating`: 預設評價權重 (1-5)。
+1. 使用者與能力 
+student: 儲存基本資料、加密密碼。
+-包含 Weight_Availability 與 Weight_Rating 欄位，紀錄個人化的推薦偏好。
+-Available_Time 使用 JSON 格式儲存簡易時間表。
 
+available_time: 詳細時間表，支援按星期（Available_Day）與時段（Start_Time, End_Time）精確媒合。
 
-2. **Teams Table (隊伍)**
-* `Team_ID` (PK): 隊伍唯一碼。
-* `Team_Name`: 課程名稱或隊伍名稱。
-* `Creator_ID` (FK): 關聯至 Users，記錄建立者。
-* `Target_Weight_A`, `Target_Weight_R`: 該隊伍特有的篩選偏好。
+2. 組隊與媒合
+team: 儲存隊伍資訊。包含 Team_Size 限制與 Creator_Student_ID（建立者）。
 
+team_member: 紀錄隊伍成員的關聯表。
 
-3. **Skills Table (技能)**
-* `Skill_ID` (PK)
-* `Student_ID` (FK): 多對一連結使用者，紀錄個人專長標籤。
+group_application: 處理組員申請（Pending / Accepted / Rejected 狀態機控制）。
 
+team_invite: 處理隊伍主動發出的邀請。
 
+3. 社交與評價 
+rating: 多維度評價系統,包括Participation,Responsibility ,Comment 
 
----
+blacklist: 黑名單機制，系統在推薦時會自動排除 Blocked_Student_ID。
+
 
 ## 🧬 推薦演算法 (Recommendation Logic)
 
