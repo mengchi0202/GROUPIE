@@ -16,29 +16,69 @@ GROUPIE 是一個模式分組媒合系統。本專案核心在於透過加權算
 
 ## 📊 資料庫設計 
 
+本專案採用高度關聯的資料庫結構，以確保資料的一致性與完整性。
 
-本專案採用高度關聯的資料庫結構，確保資料完整性。
+1. 使用者與能力
 
-1. 使用者與能力 
-student: 儲存基本資料、加密密碼。
--包含 Weight_Availability 與 Weight_Rating 欄位，紀錄個人化的推薦偏好。
--Available_Time 使用 JSON 格式儲存簡易時間表。
+student
+儲存使用者基本資料與加密密碼，並包含個人化推薦相關欄位：
 
-available_time: 詳細時間表，支援按星期（Available_Day）與時段（Start_Time, End_Time）精確媒合。
+Weight_Availability：時間匹配權重
+
+Weight_Rating：評價匹配權重
+
+Available_Time：使用 JSON 格式儲存簡易時間表
+
+available_time
+儲存更詳細的時間資訊，用於精確媒合：
+
+Available_Day：可配合的星期
+
+Start_Time：開始時間
+
+End_Time：結束時間
+
+可支援依照星期與時段進行精確時間匹配。
 
 2. 組隊與媒合
-team: 儲存隊伍資訊。包含 Team_Size 限制與 Creator_Student_ID（建立者）。
 
-team_member: 紀錄隊伍成員的關聯表。
+team
+儲存隊伍基本資訊，包含：
 
-group_application: 處理組員申請（Pending / Accepted / Rejected 狀態機控制）。
+Team_Size：隊伍人數限制
 
-team_invite: 處理隊伍主動發出的邀請。
+Creator_Student_ID：隊伍建立者
 
-3. 社交與評價 
-rating: 多維度評價系統,包括Participation,Responsibility ,Comment 
+team_member
+隊伍與成員的關聯表，用於記錄每個隊伍中的成員資訊。
 
-blacklist: 黑名單機制，系統在推薦時會自動排除 Blocked_Student_ID。
+group_application
+處理學生申請加入隊伍的流程，採用狀態機控制：
+
+Pending
+
+Accepted
+
+Rejected
+
+team_invite
+處理隊伍主動邀請其他學生加入的功能。
+
+3. 社交與評價系統
+
+rating
+多維度評價系統，包含以下評分指標：
+
+Participation（參與度）
+
+Responsibility（責任感）
+
+Comment（文字評價）
+
+blacklist
+黑名單機制，用於避免不適合的合作關係。
+系統在推薦組員時，會自動排除 Blocked_Student_ID。
+
 
 
 ## 🧬 推薦演算法 
