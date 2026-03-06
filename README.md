@@ -3,7 +3,7 @@
 
 GROUPIE 是一個模式分組媒合系統。本專案核心在於透過加權算法解決學生分組時的資訊不對稱問題，幫助學生避開「雷組員」，尋找最契合的合作夥伴。
 
-## 🏗️ 系統架構 (System Architecture)
+## 🏗️ 系統架構 
 
 
 
@@ -14,7 +14,7 @@ GROUPIE 是一個模式分組媒合系統。本專案核心在於透過加權算
 
 ---
 
-## 📊 資料庫設計 (Database Design)
+## 📊 資料庫設計 
 
 
 本專案採用高度關聯的資料庫結構，確保資料完整性。
@@ -41,7 +41,7 @@ rating: 多維度評價系統,包括Participation,Responsibility ,Comment
 blacklist: 黑名單機制，系統在推薦時會自動排除 Blocked_Student_ID。
 
 
-## 🧬 推薦演算法 (Recommendation Logic)
+## 🧬 推薦演算法 
 
 系統的核心技術在於 **加權評分機制 (Weighted Scoring Mechanism)**。當隊伍建立者設定權重時，後端會執行以下邏輯：
 
@@ -55,7 +55,7 @@ $$Score = (Match_{Time} \times Weight_{A}) + (Match_{Rating} \times Weight_{R})$
 
 ---
 
-## 🛠️ 技術關鍵點 (Technical Highlights)
+## 🛠️ 技術關鍵點 
 
 * **RESTful API 路由設計**：
 * `POST /api/auth/register`: 處理兩階段註冊邏輯。
