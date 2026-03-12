@@ -95,7 +95,7 @@ $$Score = (Match_{Time} \times Weight_{A}) + (Match_{Rating} \times Weight_{R})$
 
 ---
 
-## 🛠️ 技術關鍵點 
+## 🛠️ 技術層 
 
 * **RESTful API 路由設計**：
 * `POST /api/auth/register`: 處理兩階段註冊邏輯。
